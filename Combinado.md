@@ -55,7 +55,10 @@ public interface ISujeto
 // Singleton para el administrador de estadísticas (Sujeto del patrón Observer)
 public class EstadisticasFutbol : ISujeto
 {
+    // Atributo privado estático para garantizar que solo hay una instancia
     private static EstadisticasFutbol instancia;
+
+    // Lista de observadores suscritos
     private List<IObserver> observadores = new List<IObserver>();
 
     // Datos de las estadísticas
@@ -75,7 +78,7 @@ public class EstadisticasFutbol : ISujeto
         return instancia;
     }
 
-    // Métodos para suscribirse y desuscribirse (Observer)
+    // Métodos para agregar y eliminar observadores (Observer)
     public void AgregarObserver(IObserver observer)
     {
         observadores.Add(observer);
@@ -86,6 +89,7 @@ public class EstadisticasFutbol : ISujeto
         observadores.Remove(observer);
     }
 
+    // Método para notificar a todos los observadores sobre un cambio en las estadísticas
     public void NotificarObservers(string mensaje)
     {
         foreach (var observer in observadores)
@@ -94,12 +98,14 @@ public class EstadisticasFutbol : ISujeto
         }
     }
 
-    // Método para actualizar las estadísticas
+    // Método para actualizar las estadísticas de fútbol y notificar a los observadores
     public void ActualizarEstadisticas(int goles, int tarjetas)
     {
         Goles = goles;
         Tarjetas = tarjetas;
-        NotificarObservers($"Estadísticas actualizadas: Goles={Goles}, Tarjetas={Tarjetas}");
+        // Usamos string.Format para formatear el mensaje correctamente
+        string mensaje = string.Format("Estadísticas actualizadas: Goles={0}, Tarjetas={1}", Goles, Tarjetas);
+        NotificarObservers(mensaje);
     }
 }
 
@@ -108,21 +114,23 @@ public class PantallaEstadisticas : IObserver
 {
     private string nombre;
 
+    // Constructor para darle un nombre a la pantalla
     public PantallaEstadisticas(string nombre)
     {
         this.nombre = nombre;
     }
 
+    // Implementación del método Actualizar, que será llamado cuando cambien las estadísticas
     public void Actualizar(string mensaje)
     {
-        Console.WriteLine($"Pantalla {nombre} muestra: {mensaje}");
+        Console.WriteLine(string.Format("Pantalla {0} muestra: {1}", nombre, mensaje));
     }
 }
 
-// Uso del Singleton y Observer en el sistema de estadísticas de fútbol
-class Program
+// Programa principal para ejecutar la prueba
+public class Program // Hacer la clase pública
 {
-    static void Main(string[] args)
+    public static void Main(string[] args) // Método Main debe ser público
     {
         // Obtener la única instancia del administrador de estadísticas
         EstadisticasFutbol adminEstadisticas = EstadisticasFutbol.ObtenerInstancia();
@@ -131,15 +139,21 @@ class Program
         PantallaEstadisticas pantalla1 = new PantallaEstadisticas("Central");
         PantallaEstadisticas pantalla2 = new PantallaEstadisticas("Estadio");
 
-        // Suscribir pantallas al administrador de estadísticas
+        // Suscribir las pantallas al administrador de estadísticas
         adminEstadisticas.AgregarObserver(pantalla1);
         adminEstadisticas.AgregarObserver(pantalla2);
 
-        // Actualizar estadísticas del partido
+        // Actualizar las estadísticas del partido
+        Console.WriteLine("Actualización 1:");
         adminEstadisticas.ActualizarEstadisticas(2, 3);
 
-        // Desuscribir una pantalla y actualizar estadísticas de nuevo
+        // Eliminar una pantalla y actualizar nuevamente las estadísticas
         adminEstadisticas.EliminarObserver(pantalla1);
+        Console.WriteLine("\nActualización 2:");
         adminEstadisticas.ActualizarEstadisticas(3, 4);
+
+        Console.ReadLine(); // Pausa para que se pueda ver la salida en la consola
     }
 }
+
+
